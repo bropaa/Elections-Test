@@ -925,3 +925,314 @@
             const container = document.getElementById('codesDisplay');
             
             if (electionState.votingCodes.size === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const codesArray = Array.from(electionState.votingCodes);
+            
+            let html = '<div class="code-display">';
+            html += '<h4>🎫 Generated Voting Codes</h4>';
+            html += `<p>Share these codes with eligible voters. Total: ${codesArray.length}</p>`;
+            html += '<div class="codes-grid">';
+            
+            codesArray.forEach(code => {
+                const isUsed = electionState.usedCodes.has(code);
+                html += `<div class="code-item ${isUsed ? 'used' : ''}">${code}</div>`;
+            });
+            
+            html += '</div>';
+            html += `<button class="btn btn-primary" onclick="downloadCodes()" style="margin-top: 15px;">📥 Download Codes</button>`;
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        // Download codes as text file
+        function downloadCodes() {
+            const codesArray = Array.from(electionState.votingCodes);
+            const text = codesArray.join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voting_codes_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Validate voting code
+        function validateCode() {
+            const code = document.getElementById('voterCode').value.toUpperCase();
+            const votingSection = document.getElementById('votingPositions');
+            
+            if (code.length >= 6) {
+                if (electionState.votingCodes.has(code)) {
+                    if (electionState.usedCodes.has(code)) {
+                        showAlert('This code has already been used!', 'danger');
+                        votingSection.classList.add('hidden');
+                    } else {
+                        showAlert('Valid code! Please vote for each position below.', 'success');
+                        votingSection.classList.remove('hidden');
+                    }
+                } else {
+                    showAlert('Invalid voting code. Please check and try again.', 'danger');
+                    votingSection.classList.add('hidden');
+                }
+            } else {
+                votingSection.classList.add('hidden');
+                document.getElementById('voteMessage').innerHTML = '';
+            }
+        }
+
+        // Submit all votes
+        function submitAllVotes() {
+            const code = document.getElementById('voterCode').value.toUpperCase();
+            
+            if (!code) {
+                showAlert('Please enter your voting code!', 'danger');
+                return;
+            }
+            
+            if (!electionState.votingCodes.has(code)) {
+                showAlert('Invalid voting code!', 'danger');
+                return;
+            }
+            
+            if (electionState.usedCodes.has(code)) {
+                showAlert('This code has already been used!', 'danger');
+                return;
+            }
+            
+            // Check if votes selected for all positions
+            const allPositions = Object.keys(electionState.positions);
+            const selectedPositions = Object.keys(electionState.selectedVotes);
+            
+            if (allPositions.length !== selectedPositions.length) {
+                showAlert('Please vote for ALL positions before submitting!', 'danger');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            
+            // Simulate processing time
+            setTimeout(() => {
+                // Record all votes
+                Object.keys(electionState.selectedVotes).forEach(position => {
+                    const candidate = electionState.selectedVotes[position];
+                    electionState.votes[position][candidate]++;
+                });
+                
+                // Mark code as used
+                electionState.usedCodes.add(code);
+                
+                // Clear form
+                document.getElementById('voterCode').value = '';
+                document.getElementById('votingPositions').classList.add('hidden');
+                electionState.selectedVotes = {};
+                
+                // Update displays
+                saveState();
+                updateResults();
+                displayCodes();
+                
+                // Hide loading
+                document.getElementById('loading').classList.remove('show');
+                
+                // Show success message
+                const votedFor = Object.values(electionState.selectedVotes);
+                showAlert(`🎉 Thank you! Your votes have been recorded for all positions.`, 'success');
+                
+            }, 1500);
+        }
+
+        // Update results display
+        function updateResults() {
+            const totalBallots = electionState.usedCodes.size;
+            const totalCodes = electionState.votingCodes.size;
+            const turnoutRate = totalCodes > 0 ? Math.round((totalBallots / totalCodes) * 100) : 0;
+            
+            // Update stats
+            document.getElementById('totalVotesCount').textContent = totalBallots;
+            document.getElementById('turnoutPercent').textContent = turnoutRate + '%';
+            
+            // Update results
+            const container = document.getElementById('resultsContainer');
+            
+            if (Object.keys(electionState.positions).length === 0) {
+                container.innerHTML = '<div class="alert alert-info">No positions added yet.</div>';
+                return;
+            }
+            
+            if (totalBallots === 0) {
+                container.innerHTML = '<div class="alert alert-info">No votes cast yet. Results will appear here as votes come in.</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            Object.keys(electionState.positions).forEach(position => {
+                const positionVotes = electionState.votes[position];
+                const totalVotesForPosition = Object.values(positionVotes).reduce((sum, count) => sum + count, 0);
+                
+                // Sort candidates by vote count
+                const sortedCandidates = electionState.positions[position]
+                    .map(name => ({
+                        name,
+                        votes: positionVotes[name] || 0
+                    }))
+                    .sort((a, b) => b.votes - a.votes);
+                
+                html += '<div class="result-position">';
+                html += `<div class="result-position-header">${position}</div>`;
+                
+                sortedCandidates.forEach((candidate, index) => {
+                    const percentage = totalVotesForPosition > 0 ? Math.round((candidate.votes / totalVotesForPosition) * 100) : 0;
+                    const isWinner = index === 0 && candidate.votes > 0;
+                    const position_rank = index + 1;
+                    const medal = position_rank === 1 ? '🥇' : position_rank === 2 ? '🥈' : position_rank === 3 ? '🥉' : '';
+                    
+                    html += `
+                        <div class="result-card ${isWinner ? 'winner' : ''}">
+                            <div class="result-header">
+                                <div class="candidate-result-name">${medal} ${candidate.name}</div>
+                                <div class="vote-count">${candidate.votes}</div>
+                            </div>
+                            <div style="font-size: 12px; color: #666; margin-bottom: 6px;">
+                                ${percentage}% of votes in this position
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percentage}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Refresh results manually
+        function refreshResults() {
+            const button = event.target;
+            button.disabled = true;
+            button.innerHTML = '🔄 Refreshing...';
+            
+            setTimeout(() => {
+                updateResults();
+                button.disabled = false;
+                button.innerHTML = '🔄 Refresh Results';
+                showAlert('Results updated!', 'info');
+            }, 1000);
+        }
+
+        // Show alert messages
+        function showAlert(message, type) {
+            const messageDiv = document.getElementById('voteMessage');
+            messageDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Export results function
+        function exportResults() {
+            const totalBallots = electionState.usedCodes.size;
+            
+            let report = `${electionState.title}\n`;
+            report += `Multi-Position Election Results\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n\n`;
+            report += `SUMMARY:\n`;
+            report += `Total Ballots Cast: ${totalBallots}\n`;
+            report += `Total Codes Generated: ${electionState.votingCodes.size}\n`;
+            report += `Turnout Rate: ${electionState.votingCodes.size > 0 ? Math.round((electionState.usedCodes.size / electionState.votingCodes.size) * 100) : 0}%\n\n`;
+            
+            Object.keys(electionState.positions).forEach(position => {
+                const positionVotes = electionState.votes[position];
+                const totalVotesForPosition = Object.values(positionVotes).reduce((sum, count) => sum + count, 0);
+                
+                const sortedCandidates = electionState.positions[position]
+                    .map(name => ({
+                        name,
+                        votes: positionVotes[name] || 0
+                    }))
+                    .sort((a, b) => b.votes - a.votes);
+                
+                report += `${position.toUpperCase()}:\n`;
+                sortedCandidates.forEach((candidate, index) => {
+                    const percentage = totalVotesForPosition > 0 ? Math.round((candidate.votes / totalVotesForPosition) * 100) : 0;
+                    report += `  ${index + 1}. ${candidate.name}: ${candidate.votes} votes (${percentage}%)\n`;
+                });
+                report += '\n';
+            });
+            
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `election_results_${new Date().toISOString().slice(0,10)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Reset entire election
+        function resetElection() {
+            if (confirm('⚠️ This will delete ALL election data including positions, candidates, codes, and votes. Are you sure?')) {
+                electionState = {
+                    title: "School Election 2025",
+                    adminPassword: "admin123",
+                    positions: {},
+                    votingCodes: new Set(),
+                    usedCodes: new Set(),
+                    votes: {},
+                    isAdminMode: false,
+                    selectedVotes: {}
+                };
+                
+                updateUI();
+                showAlert('Election has been reset!', 'info');
+            }
+        }
+
+        // Handle enter key in input fields
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add candidate with Enter key
+            document.getElementById('candidateInputNew').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addCandidate();
+                }
+            });
+            
+            document.getElementById('positionInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('candidateInputNew').focus();
+                }
+            });
+            
+            // Validate code as user types
+            document.getElementById('voterCode').addEventListener('input', function(e) {
+                this.value = this.value.toUpperCase();
+                if (this.value.length >= 6) {
+                    validateCode();
+                }
+            });
+            
+            // Initialize the app
+            initApp();
+            
+            // Show admin toggle if setup parameter is present
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('admin') === 'true') {
+                document.getElementById('adminToggle').classList.add('show');
+            }
+        });
+    </script>
+</body>
+</html>
