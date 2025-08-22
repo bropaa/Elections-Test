@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Election System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            font-size: 0.9em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .admin-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+            display: none; /* Hidden by default */
+        }
+        
+        .admin-toggle.show {
+            display: block;
+        }
+        
+        .admin-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .admin-login {
+            background: #f8f9fa;
+            padding: 25px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .admin-password {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .section {
+            padding: 25px;
+        }
+        
+        .admin-section {
+            display: none;
+            border-bottom: 2px solid #f0f0f0;
+            background: #f8f9fa;
+        }
+        
+        .admin-section.show {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: all 0.5s ease;
+            transform: translate(-50%, -50%);
+        }
+        
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #229954);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-small {
+            width: auto;
+            padding: 8px 16px;
+            font-size: 14px;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .position-section {
+            background: white;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: 2px solid #e1e8ed;
+            overflow: hidden;
+        }
+        
+        .position-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .candidate-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .candidate-item:hover {
+            transform: translateX(5px);
+        }
+        
+        .voting-section {
+            text-align: center;
+        }
+        
+        .voting-position {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e1e8ed;
+        }
+        
+        .position-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+            background: #3498db;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .vote-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .vote-card:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+        }
+        
+        .vote-card.selected {
+            border-color: #27ae60;
+            background: #e8f5e8;
+        }
+        
+        .candidate-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+        
+        .candidate-info {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 12px;
+            margin: 15px 0;
+            font-weight: 500;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+        
+        .results-section {
+            background: #f8f9fa;
+        }
+        
+        .result-position {
+            background: white;
+            margin: 15px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .result-position-header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .result-card {
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+        }
+        
+        .result-card.winner {
+            border-left-color: #f1c40f;
+            background: linear-gradient(135deg, #fff9e6, #f8f9fa);
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .candidate-result-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .vote-count {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+        
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .code-display {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .codes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .code-item {
+            background: white;
+            padding: 10px 5px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 12px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        
+        .code-item.used {
+            opacity: 0.5;
+            text-decoration: line-through;
+            background: #f8f8f8;
+        }
+        
+        .emoji {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+        
+        .loading.show {
+            display: flex;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+            .container {
+                margin: 5px;
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .section {
+                padding: 20px 15px;
+            }
+            
+            .btn {
+                padding: 18px;
+                font-size: 18px;
+            }
+            
+            input, select {
+                padding: 18px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="admin-toggle" onclick="toggleAdmin()" id="adminToggle">⚙️ Admin</button>
+            <div class="emoji">🗳️</div>
+            <h1 id="electionTitle">School Election 2025</h1>
+            <p>Vote for all positions</p>
+        </div>
+        
+        <!-- Admin Login -->
+        <div id="adminLogin" class="admin-login hidden">
+            <h3 style="margin-bottom: 15px; color: #2c3e50;">🔐 Admin Access</h3>
+            <input type="password" id="adminPassword" class="admin-password" placeholder="Enter admin password" onkeypress="checkAdminEnter(event)">
+            <button class="btn btn-primary" onclick="checkAdminPassword()">Access Admin Panel</button>
+            <div id="adminError"></div>
+        </div>
+        
+        <!-- Admin Section -->
+        <div id="adminSection" class="admin-section">
+            <div class="section">
+                <h3 style="margin-bottom: 20px; color: #2c3e50;">📋 Election Setup</h3>
+                
+                <div class="form-group">
+                    <label for="titleInput">Election Title:</label>
+                    <input type="text" id="titleInput" value="School Election 2025" onchange="updateTitle()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="adminPasswordSet">Set Admin Password:</label>
+                    <input type="password" id="adminPasswordSet" placeholder="Enter a secure admin password" onchange="updateAdminPassword()">
+                    <small style="color: #666;">This password protects admin access</small>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="positionInput">Position/Role:</label>
+                            <input type="text" id="positionInput" placeholder="e.g., Head Boy, Head Girl">
+                        </div>
+                        <div>
+                            <label for="candidateInputNew">Candidate Name:</label>
+                            <input type="text" id="candidateInputNew" placeholder="Enter candidate name">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addCandidate()">Add Candidate to Position</button>
+                </div>
+                
+                <div id="positionsList">
+                    <h4 style="margin: 20px 0 10px 0;">Current Positions & Candidates:</h4>
+                    <div id="positionsContainer"></div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 30px;">
+                    <label for="numVoters">Number of Eligible Voters:</label>
+                    <input type="number" id="numVoters" value="50" min="1" max="1000">
+                    <button class="btn btn-success" onclick="generateCodes()">Generate Voting Codes</button>
+                </div>
+                
+                <div id="codesDisplay"></div>
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="exportResults()">📊 Export Results</button>
+                    <button class="btn btn-danger" onclick="resetElection()">Reset Election</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Voting Section -->
+        <div id="votingSection" class="section voting-section">
+            <div class="emoji">✨</div>
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Cast Your Votes</h2>
+            
+            <div class="form-group">
+                <label for="voterCode">Enter Your Voting Code:</label>
+                <input type="text" id="voterCode" placeholder="Enter your unique code" 
+                       style="text-align: center; text-transform: uppercase; letter-spacing: 2px;" 
+                       maxlength="8" onchange="validateCode()">
+            </div>
+            
+            <div id="votingPositions" class="hidden">
+                <h3 style="margin: 20px 0; color: #2c3e50;">Vote for Each Position:</h3>
+                <div id="positionsVoting"></div>
+                <button class="btn btn-success" onclick="submitAllVotes()" id="voteButton" disabled>
+                    🗳️ Submit All Votes
+                </button>
+            </div>
+            
+            <div id="voteMessage"></div>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="resultsSection" class="section results-section">
+            <h2 style="margin-bottom: 20px; color: #2c3e50; text-align: center;">📊 Live Results</h2>
+            
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalVotesCount">0</div>
+                    <div class="stat-label">Total Ballots</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="turnoutPercent">0%</div>
+                    <div class="stat-label">Turnout</div>
+                </div>
+            </div>
+            
+            <div id="resultsContainer"></div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="refreshResults()">🔄 Refresh Results</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Processing your votes...</p>
+    </div>
+
+    <script>
+        // Global state management
+        let electionState = {
+            title: "School Election 2025",
+            adminPassword: "admin123", // Default password
+            positions: {}, // {positionName: [candidate1, candidate2, ...]}
+            votingCodes: new Set(),
+            usedCodes: new Set(),
+            votes: {}, // {positionName: {candidate: count}}
+            isAdminMode: false,
+            selectedVotes: {} // {positionName: selectedCandidate}
+        };
+
+        // Initialize the application
+        function initApp() {
+            loadState();
+            updateUI();
+            setInterval(updateResults, 10000); // Auto-refresh results every 10 seconds
+            
+            // Check if admin password is set in URL for setup
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('setup') === 'true') {
+                document.getElementById('adminToggle').classList.add('show');
+            }
+        }
+
+        // Load state from localStorage (but NOT localStorage due to restrictions)
+        function loadState() {
+            // Using memory storage only as localStorage may not be available in artifacts
+            console.log('Election system initialized');
+        }
+
+        // Save state (using memory only)
+        function saveState() {
+            console.log('State saved to memory');
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            document.getElementById('electionTitle').textContent = electionState.title;
+            document.getElementById('titleInput').value = electionState.title;
+            updatePositionsList();
+            updateVotingPositions();
+            updateResults();
+            displayCodes();
+        }
+
+        // Check admin password
+        function checkAdminPassword() {
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('adminError');
+            
+            if (password === electionState.adminPassword) {
+                document.getElementById('adminLogin').classList.add('hidden');
+                document.getElementById('adminSection').classList.add('show');
+                electionState.isAdminMode = true;
+                errorDiv.innerHTML = '';
+            } else {
+                errorDiv.innerHTML = '<div class="alert alert-danger" style="margin-top: 10px;">Incorrect password!</div>';
+            }
+        }
+
+        function checkAdminEnter(event) {
+            if (event.key === 'Enter') {
+                checkAdminPassword();
+            }
+        }
+
+        // Toggle admin mode
+        function toggleAdmin() {
+            if (electionState.isAdminMode) {
+                electionState.isAdminMode = false;
+                document.getElementById('adminSection').classList.remove('show');
+                document.getElementById('adminLogin').classList.add('hidden');
+            } else {
+                document.getElementById('adminLogin').classList.remove('hidden');
+            }
+        }
+
+        // Update election title
+        function updateTitle() {
+            electionState.title = document.getElementById('titleInput').value;
+            document.getElementById('electionTitle').textContent = electionState.title;
+            saveState();
+        }
+
+        // Update admin password
+        function updateAdminPassword() {
+            const newPassword = document.getElementById('adminPasswordSet').value.trim();
+            if (newPassword) {
+                electionState.adminPassword = newPassword;
+                saveState();
+                showAlert('Admin password updated!', 'success');
+            }
+        }
+
+        // Add candidate to position
+        function addCandidate() {
+            const positionInput = document.getElementById('positionInput');
+            const candidateInput = document.getElementById('candidateInputNew');
+            const position = positionInput.value.trim();
+            const candidate = candidateInput.value.trim();
+            
+            if (!position || !candidate) {
+                showAlert('Please enter both position and candidate name!', 'danger');
+                return;
+            }
+            
+            // Initialize position if it doesn't exist
+            if (!electionState.positions[position]) {
+                electionState.positions[position] = [];
+                electionState.votes[position] = {};
+            }
+            
+            // Check if candidate already exists in this position
+            if (electionState.positions[position].includes(candidate)) {
+                showAlert(`${candidate} is already added to ${position}!`, 'danger');
+                return;
+            }
+            
+            // Add candidate
+            electionState.positions[position].push(candidate);
+            electionState.votes[position][candidate] = 0;
+            
+            // Clear inputs
+            candidateInput.value = '';
+            
+            updatePositionsList();
+            updateVotingPositions();
+            saveState();
+            showAlert(`${candidate} added to ${position}!`, 'success');
+        }
+
+        // Remove candidate from position
+        function removeCandidate(position, candidate) {
+            if (confirm(`Remove ${candidate} from ${position}?`)) {
+                electionState.positions[position] = electionState.positions[position].filter(c => c !== candidate);
+                delete electionState.votes[position][candidate];
+                
+                // Remove position if no candidates left
+                if (electionState.positions[position].length === 0) {
+                    delete electionState.positions[position];
+                    delete electionState.votes[position];
+                }
+                
+                updatePositionsList();
+                updateVotingPositions();
+                saveState();
+                showAlert('Candidate removed!', 'info');
+            }
+        }
+
+        // Update positions list in admin
+        function updatePositionsList() {
+            const container = document.getElementById('positionsContainer');
+            container.innerHTML = '';
+            
+            Object.keys(electionState.positions).forEach(position => {
+                const positionDiv = document.createElement('div');
+                positionDiv.className = 'position-section';
+                
+                let html = `<div class="position-header">${position}</div>`;
+                
+                electionState.positions[position].forEach(candidate => {
+                    html += `
+                        <div class="candidate-item">
+                            <span><strong>${candidate}</strong></span>
+                            <button class="btn btn-danger btn-small" onclick="removeCandidate('${position}', '${candidate}')">Remove</button>
+                        </div>
+                    `;
+                });
+                
+                positionDiv.innerHTML = html;
+                container.appendChild(positionDiv);
+            });
+        }
+
+        // Update voting positions display
+        function updateVotingPositions() {
+            const container = document.getElementById('positionsVoting');
+            container.innerHTML = '';
+            
+            Object.keys(electionState.positions).forEach(position => {
+                const positionDiv = document.createElement('div');
+                positionDiv.className = 'voting-position';
+                
+                let html = `<div class="position-title">${position}</div>`;
+                
+                electionState.positions[position].forEach(candidate => {
+                    html += `
+                        <div class="vote-card" onclick="selectCandidate('${position}', '${candidate}', this)">
+                            <div class="candidate-name">${candidate}</div>
+                            <div class="candidate-info">Tap to select for ${position}</div>
+                        </div>
+                    `;
+                });
+                
+                positionDiv.innerHTML = html;
+                container.appendChild(positionDiv);
+            });
+        }
+
+        // Select candidate for a position
+        function selectCandidate(position, candidate, element) {
+            // Remove previous selection for this position
+            const positionContainer = element.parentNode;
+            positionContainer.querySelectorAll('.vote-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            element.classList.add('selected');
+            electionState.selectedVotes[position] = candidate;
+            
+            // Check if all positions have selections
+            const allPositions = Object.keys(electionState.positions);
+            const selectedPositions = Object.keys(electionState.selectedVotes);
+            
+            if (allPositions.length > 0 && selectedPositions.length === allPositions.length) {
+                document.getElementById('voteButton').disabled = false;
+            }
+        }
+
+        // Generate voting codes
+        function generateCodes() {
+            const numVoters = parseInt(document.getElementById('numVoters').value);
+            
+            if (numVoters < 1 || numVoters > 1000) {
+                showAlert('Please enter a number between 1 and 1000', 'danger');
+                return;
+            }
+            
+            electionState.votingCodes.clear();
+            
+            while (electionState.votingCodes.size < numVoters) {
+                const code = generateRandomCode();
+                electionState.votingCodes.add(code);
+            }
+            
+            displayCodes();
+            saveState();
+            showAlert(`${numVoters} voting codes generated!`, 'success');
+        }
+
+        // Generate random voting code
+        function generateRandomCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 6; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Display generated codes
+        function displayCodes() {
+            const container = document.getElementById('codesDisplay');
+            
+            if (electionState.votingCodes.size === 0) {
