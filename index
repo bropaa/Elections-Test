@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Elections System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #ecf0f1;
+            border-bottom: 2px solid #bdc3c7;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-button:hover {
+            background: #2980b9;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 5px solid #3498db;
+        }
+
+        .position-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .candidate-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #ecf0f1;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .voter-code {
+            background: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 18px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .vote-bar {
+            height: 25px;
+            background: #ecf0f1;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .vote-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border-radius: 12px;
+            transition: width 0.5s ease;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .voting-section {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-item:hover {
+            background: #e9ecef;
+        }
+
+        .radio-item input[type="radio"] {
+            width: auto;
+            margin-right: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏫 School Elections System</h1>
+            <p>Democratic voting made simple and secure</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="tab-button active" onclick="showTab('login')">Login</button>
+            <button class="tab-button" id="adminTabBtn" onclick="showTab('admin')" style="display: none;">Admin Panel</button>
+            <button class="tab-button" onclick="showTab('vote')">Vote</button>
+            <button class="tab-button" onclick="showTab('results')">Results</button>
+        </div>
+
+        <!-- Login Tab -->
+        <div id="login" class="tab-content active">
+            <div class="voting-section">
+                <h2>Enter Your Voting Code</h2>
+                <div class="form-group">
+                    <label for="voterCode">Voter Code:</label>
+                    <input type="text" id="voterCode" placeholder="Enter your unique voting code" style="text-transform: uppercase;">
+                </div>
+                <button class="btn" onclick="validateVoterCode()">Access Voting Booth</button>
+                
+                <div class="card" style="margin-top: 30px;">
+                    <h3>Admin Access</h3>
+                    <p>Are you an election administrator? Click below to access admin controls.</p>
+                    <div class="form-group">
+                        <label for="adminPassword">Admin Password:</label>
+                        <input type="password" id="adminPassword" placeholder="Enter admin password">
+                    </div>
+                    <button class="btn btn-success" onclick="adminLogin()">Admin Login</button>
+                    <button class="btn" id="adminLogoutBtn" onclick="adminLogout()" style="display: none;">Logout Admin</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel Tab -->
+        <div id="admin" class="tab-content">
+            <div id="adminContent" style="display: none;">
+                <h2>Admin Control Panel</h2>
+                
+                <!-- Position Management -->
+                <div class="card">
+                    <h3>Add New Position</h3>
+                    <div class="form-group">
+                        <label for="positionName">Position Name:</label>
+                        <input type="text" id="positionName" placeholder="e.g., Student Council President">
+                    </div>
+                    <div class="form-group">
+                        <label for="positionDescription">Description:</label>
+                        <textarea id="positionDescription" rows="3" placeholder="Position description..."></textarea>
+                    </div>
+                    <button class="btn" onclick="addPosition()">Add Position</button>
+                </div>
+
+                <!-- Candidate Management -->
+                <div class="card">
+                    <h3>Add Candidate</h3>
+                    <div class="form-group">
+                        <label for="candidatePosition">Select Position:</label>
+                        <select id="candidatePosition">
+                            <option value="">Select a position...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateName">Candidate Name:</label>
+                        <input type="text" id="candidateName" placeholder="Enter candidate name">
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateClass">Class/Grade:</label>
+                        <input type="text" id="candidateClass" placeholder="e.g., Grade 12A">
+                    </div>
+                    <div class="form-group">
+                        <label for="candidateManifesto">Campaign Manifesto:</label>
+                        <textarea id="candidateManifesto" rows="4" placeholder="Candidate's campaign promises..."></textarea>
+                    </div>
+                    <button class="btn" onclick="addCandidate()">Add Candidate</button>
+                </div>
+
+                <!-- Voter Code Generation -->
+                <div class="card">
+                    <h3>Generate Voter Codes</h3>
+                    <div class="form-group">
+                        <label for="numCodes">Number of codes to generate:</label>
+                        <input type="number" id="numCodes" min="1" max="500" value="50">
+                    </div>
+                    <button class="btn btn-success" onclick="generateVoterCodes()">Generate Codes</button>
+                    <button class="btn" onclick="downloadCodes()">Download Codes</button>
+                    
+                    <div id="generatedCodes"></div>
+                </div>
+
+                <!-- Current Setup Display -->
+                <div id="currentSetup"></div>
+
+                <!-- Election Controls -->
+                <div class="card">
+                    <h3>Election Controls</h3>
+                    <button class="btn btn-success" onclick="startElection()">Start Election</button>
+                    <button class="btn btn-danger" onclick="endElection()">End Election</button>
+                    <button class="btn btn-danger" onclick="resetElection()">Reset All Data</button>
+                    <div id="electionStatus"></div>
+                </div>
+            </div>
+            
+            <div id="adminLoginPrompt">
+                <div class="card">
+                    <h3>Admin Access Required</h3>
+                    <p>Please login as admin from the Login tab to access the admin panel.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voting Tab -->
+        <div id="vote" class="tab-content">
+            <div id="votingContent" style="display: none;">
+                <div class="voting-section">
+                    <h2>Cast Your Vote</h2>
+                    <div id="votingForm"></div>
+                    <button class="btn btn-success" onclick="submitVotes()" id="submitBtn" style="display: none;">Submit My Votes</button>
+                </div>
+            </div>
+            
+            <div id="voteLoginPrompt">
+                <div class="card">
+                    <h3>Voter Access Required</h3>
+                    <p>Please enter your voter code from the Login tab to access the voting booth.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content">
+            <h2>Election Results</h2>
+            <div id="resultsContent">
+                <div class="alert alert-error">
+                    <p>No election data available. Please set up positions and candidates in the Admin Panel.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let electionData = {
+            positions: [],
+            candidates: {},
+            voterCodes: [],
+            usedCodes: [],
+            votes: {},
+            electionActive: false,
+            adminPassword: 'admin123'
+        };
+
+        let currentUser = {
+            isAdmin: false,
+            isVoter: false,
+            voterCode: null
+        };
+
+        // Initialize the application
+        function initializeApp() {
+            // Load data from memory (in a real app, this would be from a database)
+            loadDemoData();
+            updateElectionStatus();
+            displayCurrentSetup();
+            updateResults();
+        }
+
+        // Load some demo data
+        function loadDemoData() {
+            electionData.positions = [
+                { id: 1, name: 'Student Council President', description: 'Lead the student body and represent student interests' },
+                { id: 2, name: 'Vice President', description: 'Assist the president and lead special committees' },
+                { id: 3, name: 'Secretary', description: 'Maintain records and handle communications' },
+                { id: 4, name: 'Treasurer', description: 'Manage student council finances and budgets' }
+            ];
+
+            electionData.candidates = {
+                1: [
+                    { id: 1, name: 'Alex Johnson', class: 'Grade 12A', manifesto: 'Improving school facilities and student voice' },
+                    { id: 2, name: 'Sarah Williams', class: 'Grade 12B', manifesto: 'Better cafeteria food and extended library hours' }
+                ],
+                2: [
+                    { id: 3, name: 'Michael Brown', class: 'Grade 11A', manifesto: 'Organizing more school events and activities' },
+                    { id: 4, name: 'Emma Davis', class: 'Grade 11C', manifesto: 'Environmental initiatives and recycling programs' }
+                ],
+                3: [
+                    { id: 5, name: 'James Wilson', class: 'Grade 10B', manifesto: 'Better communication between students and faculty' }
+                ],
+                4: [
+                    { id: 6, name: 'Olivia Moore', class: 'Grade 12A', manifesto: 'Fundraising for school equipment and trips' },
+                    { id: 7, name: 'David Taylor', class: 'Grade 11A', manifesto: 'Budget transparency and student input on spending' }
+                ]
+            };
+
+            // Generate some sample voter codes
+            electionData.voterCodes = ['VOTE001', 'VOTE002', 'VOTE003', 'VOTE004', 'VOTE005'];
+            electionData.electionActive = true;
+        }
+
+        // Tab management
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all buttons
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab and activate button
+            document.getElementById(tabName).classList.add('active');
+            
+            // Find and activate the corresponding button
+            const targetButton = tabName === 'admin' ? 
+                document.getElementById('adminTabBtn') : 
+                document.querySelector(`[onclick="showTab('${tabName}')"]`);
+            if (targetButton) {
+                targetButton.classList.add('active');
+            }
+        }
+
+        // Admin login
+        function adminLogin() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === electionData.adminPassword) {
+                currentUser.isAdmin = true;
+                
+                // Show admin tab and logout button
+                document.getElementById('adminTabBtn').style.display = 'block';
+                document.getElementById('adminLogoutBtn').style.display = 'inline-block';
+                
+                // Switch to admin panel
+                showTab('admin');
+                document.getElementById('adminTabBtn').classList.add('active');
+                document.querySelector('[onclick="showTab(\'login\')"]').classList.remove('active');
+                
+                document.getElementById('adminContent').style.display = 'block';
+                document.getElementById('adminLoginPrompt').style.display = 'none';
+                updatePositionSelect();
+                displayCurrentSetup();
+                showAlert('Admin login successful! Admin Panel is now available.', 'success');
+                
+                // Clear password field
+                document.getElementById('adminPassword').value = '';
+            } else {
+                showAlert('Invalid admin password!', 'error');
+            }
+        }
+
+        // Admin logout
+        function adminLogout() {
+            currentUser.isAdmin = false;
+            
+            // Hide admin tab and logout button
+            document.getElementById('adminTabBtn').style.display = 'none';
+            document.getElementById('adminLogoutBtn').style.display = 'none';
+            
+            // Switch back to login tab
+            showTab('login');
+            document.querySelector('[onclick="showTab(\'login\')"]').classList.add('active');
+            
+            document.getElementById('adminContent').style.display = 'none';
+            document.getElementById('adminLoginPrompt').style.display = 'block';
+            
+            showAlert('Admin logged out successfully!', 'success');
+        }
+
+        // Voter code validation
+        function validateVoterCode() {
+            const code = document.getElementById('voterCode').value.toUpperCase();
+            
+            if (!electionData.electionActive) {
+                showAlert('Election is not currently active!', 'error');
+                return;
+            }
+
+            if (electionData.voterCodes.includes(code)) {
+                if (electionData.usedCodes.includes(code)) {
+                    showAlert('This code has already been used!', 'error');
+                } else {
+                    currentUser.isVoter = true;
+                    currentUser.voterCode = code;
+                    document.getElementById('votingContent').style.display = 'block';
+                    document.getElementById('voteLoginPrompt').style.display = 'none';
+                    generateVotingForm();
+                    showAlert('Access granted! You can now vote.', 'success');
+                }
+            } else {
+                showAlert('Invalid voter code!', 'error');
+            }
+        }
+
+        // Add new position
+        function addPosition() {
+            const name = document.getElementById('positionName').value;
+            const description = document.getElementById('positionDescription').value;
+            
+            if (name.trim() === '') {
+                showAlert('Please enter a position name!', 'error');
+                return;
+            }
+            
+            const newPosition = {
+                id: Date.now(),
+                name: name.trim(),
+                description: description.trim()
+            };
+            
+            electionData.positions.push(newPosition);
+            electionData.candidates[newPosition.id] = [];
+            
+            document.getElementById('positionName').value = '';
+            document.getElementById('positionDescription').value = '';
+            
+            updatePositionSelect();
+            displayCurrentSetup();
+            showAlert('Position added successfully!', 'success');
+        }
+
+        // Add new candidate
+        function addCandidate() {
+            const positionId = document.getElementById('candidatePosition').value;
+            const name = document.getElementById('candidateName').value;
+            const candidateClass = document.getElementById('candidateClass').value;
+            const manifesto = document.getElementById('candidateManifesto').value;
+            
+            if (!positionId || name.trim() === '') {
+                showAlert('Please select a position and enter candidate name!', 'error');
+                return;
+            }
+            
+            const newCandidate = {
+                id: Date.now(),
+                name: name.trim(),
+                class: candidateClass.trim(),
+                manifesto: manifesto.trim()
+            };
+            
+            electionData.candidates[positionId].push(newCandidate);
+            
+            document.getElementById('candidateName').value = '';
+            document.getElementById('candidateClass').value = '';
+            document.getElementById('candidateManifesto').value = '';
+            
+            displayCurrentSetup();
+            showAlert('Candidate added successfully!', 'success');
+        }
+
+        // Generate voter codes
+        function generateVoterCodes() {
+            const numCodes = parseInt(document.getElementById('numCodes').value);
+            const newCodes = [];
+            
+            for (let i = 0; i < numCodes; i++) {
+                let code;
+                do {
+                    code = 'VOTE' + Math.random().toString(36).substr(2, 6).toUpperCase();
+                } while (electionData.voterCodes.includes(code));
+                
+                newCodes.push(code);
+                electionData.voterCodes.push(code);
+            }
+            
+            displayGeneratedCodes(newCodes);
+            showAlert(`Generated ${numCodes} voter codes!`, 'success');
+        }
+
+        // Display generated codes
+        function displayGeneratedCodes(codes) {
+            const container = document.getElementById('generatedCodes');
+            container.innerHTML = '<h4>Generated Codes:</h4>';
+            
+            codes.forEach(code => {
+                const codeDiv = document.createElement('div');
+                codeDiv.className = 'voter-code';
+                codeDiv.textContent = code;
+                container.appendChild(codeDiv);
+            });
+        }
+
+        // Download codes as text file
+        function downloadCodes() {
+            const codes = electionData.voterCodes.join('\n');
+            const blob = new Blob([codes], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'voter_codes.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Update position select dropdown
+        function updatePositionSelect() {
+            const select = document.getElementById('candidatePosition');
+            select.innerHTML = '<option value="">Select a position...</option>';
+            
+            electionData.positions.forEach(position => {
+                const option = document.createElement('option');
+                option.value = position.id;
+                option.textContent = position.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Display current election setup
+        function displayCurrentSetup() {
+            const container = document.getElementById('currentSetup');
+            let html = '<div class="card"><h3>Current Election Setup</h3>';
+            
+            if (electionData.positions.length === 0) {
+                html += '<p>No positions added yet.</p>';
+            } else {
+                electionData.positions.forEach(position => {
+                    html += `<div class="position-card">
+                        <h4>${position.name}</h4>
+                        <p><em>${position.description}</em></p>
+                        <strong>Candidates:</strong>`;
+                    
+                    const candidates = electionData.candidates[position.id] || [];
+                    if (candidates.length === 0) {
+                        html += '<p>No candidates yet.</p>';
+                    } else {
+                        candidates.forEach(candidate => {
+                            html += `<div class="candidate-item">
+                                <div>
+                                    <strong>${candidate.name}</strong> (${candidate.class})<br>
+                                    <small>${candidate.manifesto}</small>
+                                </div>
+                            </div>`;
+                        });
+                    }
+                    html += '</div>';
+                });
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Generate voting form
+        function generateVotingForm() {
+            const container = document.getElementById('votingForm');
+            let html = '';
+            
+            electionData.positions.forEach(position => {
+                const candidates = electionData.candidates[position.id] || [];
+                if (candidates.length > 0) {
+                    html += `<div class="position-card">
+                        <h3>${position.name}</h3>
+                        <p>${position.description}</p>
+                        <div class="radio-group">`;
+                    
+                    candidates.forEach(candidate => {
+                        html += `<label class="radio-item">
+                            <input type="radio" name="position_${position.id}" value="${candidate.id}">
+                            <div>
+                                <strong>${candidate.name}</strong> (${candidate.class})<br>
+                                <small>${candidate.manifesto}</small>
+                            </div>
+                        </label>`;
+                    });
+                    
+                    html += '</div></div>';
+                }
+            });
+            
+            if (html !== '') {
+                container.innerHTML = html;
+                document.getElementById('submitBtn').style.display = 'block';
+            } else {
+                container.innerHTML = '<p>No positions available for voting.</p>';
+            }
+        }
+
+        // Submit votes
+        function submitVotes() {
+            const formData = new FormData();
+            const radioInputs = document.querySelectorAll('input[type="radio"]:checked');
+            
+            if (radioInputs.length === 0) {
+                showAlert('Please select at least one candidate!', 'error');
+                return;
+            }
+            
+            // Record votes
+            radioInputs.forEach(input => {
+                const candidateId = input.value;
+                if (!electionData.votes[candidateId]) {
+                    electionData.votes[candidateId] = 0;
+                }
+                electionData.votes[candidateId]++;
+            });
+            
+            // Mark code as used
+            electionData.usedCodes.push(currentUser.voterCode);
+            
+            // Reset user state
+            currentUser.isVoter = false;
+            currentUser.voterCode = null;
+            
+            // Update results
+            updateResults();
+            
+            showAlert('Your votes have been submitted successfully!', 'success');
+            
+            // Hide voting content
+            document.getElementById('votingContent').style.display = 'none';
+            document.getElementById('voteLoginPrompt').style.display = 'block';
+            
+            // Clear the form
+            document.getElementById('voterCode').value = '';
+        }
+
+        // Update results display
+        function updateResults() {
+            const container = document.getElementById('resultsContent');
+            
+            if (electionData.positions.length === 0) {
+                container.innerHTML = '<div class="alert alert-error"><p>No election data available.</p></div>';
+                return;
+            }
+            
+            let html = '<div class="results-grid">';
+            
+            electionData.positions.forEach(position => {
+                const candidates = electionData.candidates[position.id] || [];
+                if (candidates.length > 0) {
+                    html += `<div class="result-card">
+                        <h3>${position.name}</h3>`;
+                    
+                    // Calculate total votes for this position
+                    let totalVotes = 0;
+                    candidates.forEach(candidate => {
+                        totalVotes += electionData.votes[candidate.id] || 0;
+                    });
+                    
+                    // Display candidates and their votes
+                    candidates.forEach(candidate => {
+                        const votes = electionData.votes[candidate.id] || 0;
+                        const percentage = totalVotes > 0 ? (votes / totalVotes * 100) : 0;
+                        
+                        html += `<div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <strong>${candidate.name}</strong>
+                                <span>${votes} votes (${percentage.toFixed(1)}%)</span>
+                            </div>
+                            <div class="vote-bar">
+                                <div class="vote-fill" style="width: ${percentage}%;"></div>
+                            </div>
+                        </div>`;
+                    });
+                    
+                    html += `<p><strong>Total Votes: ${totalVotes}</strong></p></div>`;
+                }
+            });
+            
+            html += '</div>';
+            
+            // Add voting statistics
+            html += `<div class="card" style="margin-top: 20px;">
+                <h3>Voting Statistics</h3>
+                <p><strong>Total Voter Codes Generated:</strong> ${electionData.voterCodes.length}</p>
+                <p><strong>Codes Used:</strong> ${electionData.usedCodes.length}</p>
+                <p><strong>Remaining Codes:</strong> ${electionData.voterCodes.length - electionData.usedCodes.length}</p>
+                <p><strong>Turnout:</strong> ${electionData.voterCodes.length > 0 ? ((electionData.usedCodes.length / electionData.voterCodes.length) * 100).toFixed(1) : 0}%</p>
+            </div>`;
+            
+            container.innerHTML = html;
+        }
+
+        // Election control functions
+        function startElection() {
+            electionData.electionActive = true;
+            updateElectionStatus();
+            showAlert('Election started!', 'success');
+        }
+
+        function endElection() {
+            electionData.electionActive = false;
+            updateElectionStatus();
+            showAlert('Election ended!', 'success');
+        }
+
+        function resetElection() {
+            if (confirm('Are you sure you want to reset all election data? This cannot be undone.')) {
+                electionData.votes = {};
+                electionData.usedCodes = [];
+                updateResults();
+                showAlert('Election data reset!', 'success');
+            }
+        }
+
+        function updateElectionStatus() {
+            const container = document.getElementById('electionStatus');
+            const status = electionData.electionActive ? 
+                '<div class="alert alert-success">Election is ACTIVE</div>' : 
+                '<div class="alert alert-error">Election is INACTIVE</div>';
+            container.innerHTML = status;
+        }
+
+        // Utility function to show alerts
+        function showAlert(message, type) {
+            // Remove existing alerts
+            const existingAlerts = document.querySelectorAll('.alert');
+            existingAlerts.forEach(alert => {
+                if (!alert.classList.contains('alert-error') || !alert.textContent.includes('No election data')) {
+                    alert.remove();
+                }
+            });
+            
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            // Add to the current tab
+            const activeTab = document.querySelector('.tab-content.active');
+            activeTab.insertBefore(alert, activeTab.firstChild);
+            
+            // Auto-remove success alerts after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => alert.remove(), 5000);
+            }
+        }
+
+        // Initialize the app when page loads
+        window.addEventListener('load', initializeApp);
+    </script>
+</body>
+</html>
