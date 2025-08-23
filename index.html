@@ -334,6 +334,13 @@
                 <h2>Welcome to School Elections</h2>
                 <p>Enter your voting code below to participate in the election.</p>
                 
+                <div class="card" style="background: #e8f5e8; border-left: 5px solid #27ae60;">
+                    <h4>📋 Available Test Codes:</h4>
+                    <p><strong>Format 1:</strong> VOTE001, VOTE002, VOTE003... up to VOTE100</p>
+                    <p><strong>Format 2:</strong> STUDENT01, STUDENT02, STUDENT03... up to STUDENT20</p>
+                    <p><em>Use any of these codes to test the voting system!</em></p>
+                </div>
+                
                 <div class="form-group">
                     <label for="voterCode">Voter Code:</label>
                     <input type="text" id="voterCode" placeholder="Enter your unique voting code" style="text-transform: uppercase;">
@@ -471,6 +478,7 @@
 
         // Load some demo data
         function loadDemoData() {
+            // Always load the same positions and candidates for consistency
             electionData.positions = [
                 { id: 1, name: 'Student Council President', description: 'Lead the student body and represent student interests' },
                 { id: 2, name: 'Vice President', description: 'Assist the president and lead special committees' },
@@ -496,12 +504,21 @@
                 ]
             };
 
-            // Generate some sample voter codes
+            // Generate consistent voter codes that work on all devices
             electionData.voterCodes = [];
-            for (let i = 1; i <= 20; i++) {
+            for (let i = 1; i <= 100; i++) {
                 electionData.voterCodes.push('VOTE' + String(i).padStart(3, '0'));
             }
+            
+            // Add some alternative code formats for testing
+            for (let i = 1; i <= 20; i++) {
+                electionData.voterCodes.push('STUDENT' + String(i).padStart(2, '0'));
+            }
+            
             electionData.electionActive = true;
+            
+            console.log('Demo data loaded. Available codes:', electionData.voterCodes.length);
+            console.log('First 10 codes:', electionData.voterCodes.slice(0, 10));
         }
 
         // Tab management
