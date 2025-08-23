@@ -495,7 +495,10 @@
             };
 
             // Generate some sample voter codes
-            electionData.voterCodes = ['VOTE001', 'VOTE002', 'VOTE003', 'VOTE004', 'VOTE005'];
+            electionData.voterCodes = [];
+            for (let i = 1; i <= 20; i++) {
+                electionData.voterCodes.push('VOTE' + String(i).padStart(3, '0'));
+            }
             electionData.electionActive = true;
         }
 
@@ -955,11 +958,40 @@
             // Add voting statistics
             html += `<div class="card" style="margin-top: 20px;">
                 <h3>Voting Statistics</h3>
-                <p><strong>Total Voter Codes Generated:</strong> ${electionData.voterCodes.length}</p>
-                <p><strong>Codes Used:</strong> ${electionData.usedCodes.length}</p>
-                <p><strong>Remaining Codes:</strong> ${electionData.voterCodes.length - electionData.usedCodes.length}</p>
-                <p><strong>Turnout:</strong> ${electionData.voterCodes.length > 0 ? ((electionData.usedCodes.length / electionData.voterCodes.length) * 100).toFixed(1) : 0}%</p>
-            </div>`;
+                <p><strong>Total Voters:</strong> ${electionData.voterCodes.length}</p>
+                <p><strong>Total Votes Cast:</strong> ${electionData.usedCodes.length}</p>
+                <p><strong>Yet to Vote:</strong> ${electionData.voterCodes.length - electionData.usedCodes.length}</p>
+                <p><strong>Turnout:</strong> ${electionData.voterCodes.length > 0 ? ((electionData.usedCodes.length / electionData.voterCodes.length) * 100).toFixed(1) : 0}%</p>`;
+            
+            // Show unused codes for admin only
+            if (currentUser.isAdmin) {
+                const unusedCodes = electionData.voterCodes.filter(code => !electionData.usedCodes.includes(code));
+                if (unusedCodes.length > 0) {
+                    html += `<div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <h4>Codes Yet to Vote (${unusedCodes.length}):</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">`;
+                    
+                    unusedCodes.forEach(code => {
+                        html += `<div class="voter-code" style="font-size: 14px; padding: 5px;">${code}</div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+                
+                if (electionData.usedCodes.length > 0) {
+                    html += `<div style="margin-top: 15px; padding: 15px; background: #e8f5e8; border-radius: 8px;">
+                        <h4>Codes That Have Voted (${electionData.usedCodes.length}):</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">`;
+                    
+                    electionData.usedCodes.forEach(code => {
+                        html += `<div style="background: #27ae60; color: white; padding: 5px; border-radius: 3px; text-align: center; font-family: monospace; font-size: 14px;">${code}</div>`;
+                    });
+                    
+                    html += `</div></div>`;
+                }
+            }
+            
+            html += '</div>';
             
             container.innerHTML = html;
         }
