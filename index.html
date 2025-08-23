@@ -32,6 +32,39 @@
             color: white;
             padding: 20px;
             text-align: center;
+            position: relative;
+        }
+
+        .admin-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-toggle input[type="password"] {
+            width: 120px;
+            padding: 8px;
+            border: 2px solid #fff;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .admin-toggle .btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .admin-status {
+            background: #27ae60;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .nav-tabs {
@@ -252,6 +285,16 @@
             .results-grid {
                 grid-template-columns: 1fr;
             }
+
+            .admin-toggle {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+
+            .admin-toggle input[type="password"] {
+                width: 100px;
+            }
         }
     </style>
 </head>
@@ -260,6 +303,22 @@
         <div class="header">
             <h1>🏫 School Elections System</h1>
             <p>Democratic voting made simple and secure</p>
+            
+            <!-- Admin Toggle in Top Right -->
+            <div class="admin-toggle">
+                <div id="adminToggleSection">
+                    <button class="btn" onclick="showAdminLogin()">Admin</button>
+                </div>
+                <div id="adminLoginSection" style="display: none;">
+                    <input type="password" id="adminPasswordToggle" placeholder="Admin password">
+                    <button class="btn btn-success" onclick="adminToggleLogin()">Login</button>
+                    <button class="btn" onclick="hideAdminLogin()">Cancel</button>
+                </div>
+                <div id="adminLoggedInSection" style="display: none;">
+                    <span class="admin-status">Admin Mode</span>
+                    <button class="btn btn-danger" onclick="adminToggleLogout()">Logout</button>
+                </div>
+            </div>
         </div>
 
         <div class="nav-tabs">
@@ -272,23 +331,14 @@
         <!-- Login Tab -->
         <div id="login" class="tab-content active">
             <div class="voting-section">
-                <h2>Enter Your Voting Code</h2>
+                <h2>Welcome to School Elections</h2>
+                <p>Enter your voting code below to participate in the election.</p>
+                
                 <div class="form-group">
                     <label for="voterCode">Voter Code:</label>
                     <input type="text" id="voterCode" placeholder="Enter your unique voting code" style="text-transform: uppercase;">
                 </div>
                 <button class="btn" onclick="validateVoterCode()">Access Voting Booth</button>
-                
-                <div class="card" style="margin-top: 30px;">
-                    <h3>Admin Access</h3>
-                    <p>Are you an election administrator? Click below to access admin controls.</p>
-                    <div class="form-group">
-                        <label for="adminPassword">Admin Password:</label>
-                        <input type="password" id="adminPassword" placeholder="Enter admin password">
-                    </div>
-                    <button class="btn btn-success" onclick="adminLogin()">Admin Login</button>
-                    <button class="btn" id="adminLogoutBtn" onclick="adminLogout()" style="display: none;">Logout Admin</button>
-                </div>
             </div>
         </div>
 
@@ -323,14 +373,6 @@
                     <div class="form-group">
                         <label for="candidateName">Candidate Name:</label>
                         <input type="text" id="candidateName" placeholder="Enter candidate name">
-                    </div>
-                    <div class="form-group">
-                        <label for="candidateClass">Class/Grade:</label>
-                        <input type="text" id="candidateClass" placeholder="e.g., Grade 12A">
-                    </div>
-                    <div class="form-group">
-                        <label for="candidateManifesto">Campaign Manifesto:</label>
-                        <textarea id="candidateManifesto" rows="4" placeholder="Candidate's campaign promises..."></textarea>
                     </div>
                     <button class="btn" onclick="addCandidate()">Add Candidate</button>
                 </div>
@@ -436,19 +478,19 @@
 
             electionData.candidates = {
                 1: [
-                    { id: 1, name: 'Alex Johnson', class: 'Grade 12A', manifesto: 'Improving school facilities and student voice' },
-                    { id: 2, name: 'Sarah Williams', class: 'Grade 12B', manifesto: 'Better cafeteria food and extended library hours' }
+                    { id: 1, name: 'Alex Johnson' },
+                    { id: 2, name: 'Sarah Williams' }
                 ],
                 2: [
-                    { id: 3, name: 'Michael Brown', class: 'Grade 11A', manifesto: 'Organizing more school events and activities' },
-                    { id: 4, name: 'Emma Davis', class: 'Grade 11C', manifesto: 'Environmental initiatives and recycling programs' }
+                    { id: 3, name: 'Michael Brown' },
+                    { id: 4, name: 'Emma Davis' }
                 ],
                 3: [
-                    { id: 5, name: 'James Wilson', class: 'Grade 10B', manifesto: 'Better communication between students and faculty' }
+                    { id: 5, name: 'James Wilson' }
                 ],
                 4: [
-                    { id: 6, name: 'Olivia Moore', class: 'Grade 12A', manifesto: 'Fundraising for school equipment and trips' },
-                    { id: 7, name: 'David Taylor', class: 'Grade 11A', manifesto: 'Budget transparency and student input on spending' }
+                    { id: 6, name: 'Olivia Moore' },
+                    { id: 7, name: 'David Taylor' }
                 ]
             };
 
@@ -479,50 +521,94 @@
             }
         }
 
-        // Admin login
-        function adminLogin() {
-            const password = document.getElementById('adminPassword').value;
+        // Show admin login form
+        function showAdminLogin() {
+            document.getElementById('adminToggleSection').style.display = 'none';
+            document.getElementById('adminLoginSection').style.display = 'flex';
+            // Focus on password field
+            setTimeout(() => document.getElementById('adminPasswordToggle').focus(), 100);
+        }
+
+        // Hide admin login form
+        function hideAdminLogin() {
+            document.getElementById('adminToggleSection').style.display = 'flex';
+            document.getElementById('adminLoginSection').style.display = 'none';
+            // Clear password field
+            document.getElementById('adminPasswordToggle').value = '';
+        }
+
+        // Admin toggle login (top right)
+        function adminToggleLogin() {
+            const password = document.getElementById('adminPasswordToggle').value;
             if (password === electionData.adminPassword) {
                 currentUser.isAdmin = true;
                 
-                // Show admin tab and logout button
+                // Show admin tab and switch UI
                 document.getElementById('adminTabBtn').style.display = 'block';
-                document.getElementById('adminLogoutBtn').style.display = 'inline-block';
+                document.getElementById('adminToggleSection').style.display = 'none';
+                document.getElementById('adminLoginSection').style.display = 'none';
+                document.getElementById('adminLoggedInSection').style.display = 'flex';
                 
                 // Switch to admin panel
                 showTab('admin');
-                document.getElementById('adminTabBtn').classList.add('active');
-                document.querySelector('[onclick="showTab(\'login\')"]').classList.remove('active');
                 
                 document.getElementById('adminContent').style.display = 'block';
                 document.getElementById('adminLoginPrompt').style.display = 'none';
                 updatePositionSelect();
                 displayCurrentSetup();
-                showAlert('Admin login successful! Admin Panel is now available.', 'success');
+                showAlert('Admin mode activated!', 'success');
                 
                 // Clear password field
-                document.getElementById('adminPassword').value = '';
+                document.getElementById('adminPasswordToggle').value = '';
             } else {
                 showAlert('Invalid admin password!', 'error');
+                document.getElementById('adminPasswordToggle').value = '';
+                document.getElementById('adminPasswordToggle').focus();
             }
         }
 
-        // Admin logout
-        function adminLogout() {
+        // Admin toggle logout (top right)
+        function adminToggleLogout() {
             currentUser.isAdmin = false;
             
-            // Hide admin tab and logout button
+            // Hide admin tab and switch UI
             document.getElementById('adminTabBtn').style.display = 'none';
-            document.getElementById('adminLogoutBtn').style.display = 'none';
+            document.getElementById('adminToggleSection').style.display = 'flex';
+            document.getElementById('adminLoginSection').style.display = 'none';
+            document.getElementById('adminLoggedInSection').style.display = 'none';
             
             // Switch back to login tab
             showTab('login');
-            document.querySelector('[onclick="showTab(\'login\')"]').classList.add('active');
             
             document.getElementById('adminContent').style.display = 'none';
             document.getElementById('adminLoginPrompt').style.display = 'block';
             
             showAlert('Admin logged out successfully!', 'success');
+        }
+
+        // Voter code validation from Vote tab
+        function validateVoterCodeFromVoteTab() {
+            const code = document.getElementById('voterCodeVote').value.toUpperCase();
+            
+            if (!electionData.electionActive) {
+                showAlert('Election is not currently active!', 'error');
+                return;
+            }
+
+            if (electionData.voterCodes.includes(code)) {
+                if (electionData.usedCodes.includes(code)) {
+                    showAlert('This code has already been used!', 'error');
+                } else {
+                    currentUser.isVoter = true;
+                    currentUser.voterCode = code;
+                    document.getElementById('votingContent').style.display = 'block';
+                    document.getElementById('voteLoginPrompt').style.display = 'none';
+                    generateVotingForm();
+                    showAlert('Access granted! You can now vote.', 'success');
+                }
+            } else {
+                showAlert('Invalid voter code!', 'error');
+            }
         }
 
         // Voter code validation
@@ -540,6 +626,9 @@
                 } else {
                     currentUser.isVoter = true;
                     currentUser.voterCode = code;
+                    
+                    // Switch to Vote tab and show voting form
+                    showTab('vote');
                     document.getElementById('votingContent').style.display = 'block';
                     document.getElementById('voteLoginPrompt').style.display = 'none';
                     generateVotingForm();
@@ -581,8 +670,6 @@
         function addCandidate() {
             const positionId = document.getElementById('candidatePosition').value;
             const name = document.getElementById('candidateName').value;
-            const candidateClass = document.getElementById('candidateClass').value;
-            const manifesto = document.getElementById('candidateManifesto').value;
             
             if (!positionId || name.trim() === '') {
                 showAlert('Please select a position and enter candidate name!', 'error');
@@ -591,16 +678,12 @@
             
             const newCandidate = {
                 id: Date.now(),
-                name: name.trim(),
-                class: candidateClass.trim(),
-                manifesto: manifesto.trim()
+                name: name.trim()
             };
             
             electionData.candidates[positionId].push(newCandidate);
             
             document.getElementById('candidateName').value = '';
-            document.getElementById('candidateClass').value = '';
-            document.getElementById('candidateManifesto').value = '';
             
             displayCurrentSetup();
             showAlert('Candidate added successfully!', 'success');
@@ -676,7 +759,10 @@
             } else {
                 electionData.positions.forEach(position => {
                     html += `<div class="position-card">
-                        <h4>${position.name}</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h4>${position.name}</h4>
+                            <button class="btn btn-danger" onclick="deletePosition(${position.id})">Delete Position</button>
+                        </div>
                         <p><em>${position.description}</em></p>
                         <strong>Candidates:</strong>`;
                     
@@ -687,9 +773,9 @@
                         candidates.forEach(candidate => {
                             html += `<div class="candidate-item">
                                 <div>
-                                    <strong>${candidate.name}</strong> (${candidate.class})<br>
-                                    <small>${candidate.manifesto}</small>
+                                    <strong>${candidate.name}</strong>
                                 </div>
+                                <button class="btn btn-danger" onclick="deleteCandidate(${position.id}, ${candidate.id})">Delete</button>
                             </div>`;
                         });
                     }
@@ -699,6 +785,53 @@
             
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        // Delete position
+        function deletePosition(positionId) {
+            if (confirm('Are you sure you want to delete this position and all its candidates?')) {
+                // Remove position
+                electionData.positions = electionData.positions.filter(pos => pos.id !== positionId);
+                
+                // Remove candidates for this position
+                delete electionData.candidates[positionId];
+                
+                // Remove votes for candidates in this position
+                Object.keys(electionData.votes).forEach(candidateId => {
+                    // Check if this candidate belonged to the deleted position
+                    let found = false;
+                    Object.keys(electionData.candidates).forEach(remainingPosId => {
+                        if (electionData.candidates[remainingPosId].some(c => c.id == candidateId)) {
+                            found = true;
+                        }
+                    });
+                    if (!found) {
+                        delete electionData.votes[candidateId];
+                    }
+                });
+                
+                updatePositionSelect();
+                displayCurrentSetup();
+                updateResults();
+                showAlert('Position deleted successfully!', 'success');
+            }
+        }
+
+        // Delete candidate
+        function deleteCandidate(positionId, candidateId) {
+            if (confirm('Are you sure you want to delete this candidate?')) {
+                // Remove candidate
+                electionData.candidates[positionId] = electionData.candidates[positionId].filter(
+                    candidate => candidate.id !== candidateId
+                );
+                
+                // Remove votes for this candidate
+                delete electionData.votes[candidateId];
+                
+                displayCurrentSetup();
+                updateResults();
+                showAlert('Candidate deleted successfully!', 'success');
+            }
         }
 
         // Generate voting form
@@ -718,8 +851,7 @@
                         html += `<label class="radio-item">
                             <input type="radio" name="position_${position.id}" value="${candidate.id}">
                             <div>
-                                <strong>${candidate.name}</strong> (${candidate.class})<br>
-                                <small>${candidate.manifesto}</small>
+                                <strong>${candidate.name}</strong>
                             </div>
                         </label>`;
                     });
